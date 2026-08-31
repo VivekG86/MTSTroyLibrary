@@ -36,6 +36,7 @@ export const Home: React.FC = () => {
   const setRating = (rating: number) => setForm(f => ({ ...f, rating }));
   const setReviewType = (reviewType: ReviewType) =>
     setForm(f => ({ ...f, reviewType, reviewFile: null }));
+  const clearReviewType = () => setForm(f => ({ ...f, reviewType: null, reviewFile: null }));
   const setReviewFile = (reviewFile: File | Blob | null) =>
     setForm(f => ({ ...f, reviewFile }));
 
@@ -183,7 +184,12 @@ export const Home: React.FC = () => {
               <Box sx={stepBox(4, '#10b981')}>4</Box>
               <Typography variant="h6" fontWeight={700}>Share Your Review</Typography>
             </Box>
-            <ReviewTypeSelector selected={form.reviewType} onSelect={setReviewType} error={errors.reviewType} />
+            <ReviewTypeSelector
+              selected={form.reviewType}
+              onSelect={setReviewType}
+              onClear={clearReviewType}
+              error={errors.reviewType}
+            />
           </Box>
 
           {/* Step 5 */}

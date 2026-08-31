@@ -1,8 +1,12 @@
 import React from 'react';
 import { AppBar, Toolbar, Typography, Container, Box } from '@mui/material';
 import { Link } from 'react-router-dom';
+import { useRole } from '../../auth/RoleContext';
 
 export const Header: React.FC = () => {
+  const role = useRole();
+  const isAdmin = role === 'admin';
+
   return (
     <AppBar position="sticky" elevation={0} sx={{ bgcolor: 'white', borderBottom: '2px solid', borderColor: 'primary.light' }}>
       <Container maxWidth="md">
@@ -16,26 +20,19 @@ export const Header: React.FC = () => {
             />
           </Box>
 
-          <Box sx={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', display: 'flex', gap: 2 }}>
-            <Typography
-              component={Link}
-              to="/reviews"
-              variant="body2"
-              fontWeight={600}
-              sx={{ color: 'text.secondary', textDecoration: 'none', '&:hover': { color: 'primary.main' } }}
-            >
-              Reviews
-            </Typography>
-            <Typography
-              component={Link}
-              to="/about"
-              variant="body2"
-              fontWeight={600}
-              sx={{ color: 'text.secondary', textDecoration: 'none', '&:hover': { color: 'primary.main' } }}
-            >
-              About
-            </Typography>
-          </Box>
+          {isAdmin && (
+            <Box sx={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}>
+              <Typography
+                component={Link}
+                to="/reviews"
+                variant="body2"
+                fontWeight={600}
+                sx={{ color: 'text.secondary', textDecoration: 'none', '&:hover': { color: 'primary.main' } }}
+              >
+                Reviews
+              </Typography>
+            </Box>
+          )}
         </Toolbar>
       </Container>
     </AppBar>
