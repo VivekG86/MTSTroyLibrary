@@ -2,10 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   Box, TextField, InputAdornment, CircularProgress,
   Paper, List, ListItem, ListItemAvatar, ListItemText,
-  Avatar, Typography, Alert
+  Avatar, Typography, Alert, Button, Link as MuiLink
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { Book } from '../../types/book';
 import { useBookSearch } from '../../hooks/useBookSearch';
 
@@ -17,6 +18,9 @@ export const BookSearch: React.FC<BookSearchProps> = ({ onSelectBook }) => {
   const { query, setQuery, results, loading, error } = useBookSearch();
   const [open, setOpen] = useState(false);
   const [focused, setFocused] = useState(false);
+  const [manual, setManual] = useState(false);
+  const [manualTitle, setManualTitle] = useState('');
+  const [manualAuthor, setManualAuthor] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
 
   const showDropdown = focused && (results.length > 0 || loading || !!error) && query.length >= 2;
@@ -40,6 +44,71 @@ export const BookSearch: React.FC<BookSearchProps> = ({ onSelectBook }) => {
     setFocused(false);
     setQuery('');
   };
+
+  const openManual = () => {
+    setManualTitle(query.trim());
+    setManualAuthor('');
+    setManual(true);
+    setFocused(false);
+  };
+
+  const handleManualAdd = () => {
+    const title = manualTitle.trim();
+    if (!title) return;
+    const authors = manualAuthor.trim() ? [manualAuthor.trim()] : ['Unknown Author'];
+    onSelectBook({
+      id: `manual-${Date.now()}`,
+      title,
+      authors,
+    });
+    setManual(false);
+    setQuery('');
+  };
+
+  if (manual) {
+    return (
+      <Box ref={containerRef} sx={{ width: '100%' }}>
+        <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1.5 }}>
+          Enter your book details
+        </Typography>
+        <TextField
+          fullWidth
+          value={manualTitle}
+          onChange={e => setManualTitle(e.target.value)}
+          placeholder="Book title"
+          label="Book title"
+          inputProps={{ maxLength: 200 }}
+          sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: 'white' } }}
+        />
+        <TextField
+          fullWidth
+          value={manualAuthor}
+          onChange={e => setManualAuthor(e.target.value)}
+          placeholder="Author (optional)"
+          label="Author"
+          inputProps={{ maxLength: 120 }}
+          sx={{ mb: 2, '& .MuiOutlinedInput-root': { borderRadius: 3, bgcolor: 'white' } }}
+        />
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={() => setManual(false)}
+            sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 700, flex: 1 }}
+          >
+            Back to search
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleManualAdd}
+            disabled={!manualTitle.trim()}
+            sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 700, flex: 1 }}
+          >
+            Use This Book
+          </Button>
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <Box ref={containerRef} sx={{ position: 'relative', width: '100%' }}>
@@ -133,8 +202,39 @@ export const BookSearch: React.FC<BookSearchProps> = ({ onSelectBook }) => {
               </ListItem>
             ))}
           </List>
+
+          {query.length >= 2 && !loading && (
+            <Box
+              sx={{
+                p: 1.5,
+                borderTop: results.length > 0 ? '1px solid' : 'none',
+                borderColor: 'divider',
+                textAlign: 'center',
+              }}
+            >
+              <Button
+                startIcon={<AddCircleOutlineIcon />}
+                onClick={openManual}
+                sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }}
+              >
+                Can't find it? Add "{query.trim()}" manually
+              </Button>
+            </Box>
+          )}
         </Paper>
       )}
+
+      <Box sx={{ mt: 1 }}>
+        <MuiLink
+          component="button"
+          type="button"
+          onClick={openManual}
+          underline="hover"
+          sx={{ fontSize: '0.875rem', fontWeight: 600 }}
+        >
+          Can't find your book? Enter it manually
+        </MuiLink>
+      </Box>
     </Box>
   );
 };

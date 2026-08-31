@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box, Button, Typography, Alert, LinearProgress } from '@mui/material';
 import MicIcon from '@mui/icons-material/Mic';
 import StopIcon from '@mui/icons-material/Stop';
@@ -14,8 +14,16 @@ interface VoiceReviewProps {
 }
 
 export const VoiceReview: React.FC<VoiceReviewProps> = ({ onAudioReady }) => {
-  const { state, audioUrl, elapsedSeconds, error, startRecording, stopRecording, resetRecording } = useVoiceRecorder();
+  const { state, audioBlob, audioUrl, elapsedSeconds, error, startRecording, stopRecording, resetRecording } = useVoiceRecorder();
   const [confirmed, setConfirmed] = useState(false);
+
+  // Hand the recorded blob up to the parent as soon as it's available.
+  // Use a ref for the callback so an unstable prop identity can't loop the effect.
+  const onAudioReadyRef = useRef(onAudioReady);
+  onAudioReadyRef.current = onAudioReady;
+  useEffect(() => {
+    onAudioReadyRef.current(audioBlob);
+  }, [audioBlob]);
 
   const handleUseRecording = () => {
     setConfirmed(true);
