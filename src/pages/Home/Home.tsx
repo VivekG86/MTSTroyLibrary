@@ -13,7 +13,7 @@ import { ReviewTypeSelector } from '../../components/ReviewTypeSelector/ReviewTy
 import { ImageReview } from '../../components/ImageReview/ImageReview';
 import { VoiceReview } from '../../components/VoiceReview/VoiceReview';
 import { LoadingState } from '../../components/LoadingState/LoadingState';
-import { validateReviewForm, hasErrors, ValidationErrors } from '../../utils/validation';
+import { validateReviewForm, hasErrors, isReviewFormComplete, ValidationErrors } from '../../utils/validation';
 import { fileToBase64, generateReviewId, submitReview } from '../../services/reviewApi';
 import { getFileExtension, buildFileName } from '../../utils/fileUtils';
 import { useNavigate } from 'react-router-dom';
@@ -30,6 +30,8 @@ export const Home: React.FC = () => {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const formComplete = isReviewFormComplete(form);
 
   const setBook = (book: Book | null) => setForm(f => ({ ...f, book }));
   const setStudentName = (studentName: string) => setForm(f => ({ ...f, studentName }));
@@ -118,16 +120,16 @@ export const Home: React.FC = () => {
       <Box
         sx={{
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          py: { xs: 4, sm: 6 },
+          py: { xs: 7, sm: 6 },
           px: 2,
           textAlign: 'center',
         }}
       >
         <Container maxWidth="sm">
-          <Typography variant="h3" fontWeight={900} color="white" sx={{ mb: 1, fontSize: { xs: '1.8rem', sm: '2.5rem' } }}>
+          <Typography variant="h3" fontWeight={900} color="white" sx={{ mb: { xs: 1.5, sm: 1 }, fontSize: { xs: '2.25rem', sm: '2.5rem' } }}>
             📚 Share Your Book Review!
           </Typography>
-          <Typography variant="h6" color="rgba(255,255,255,0.85)" fontWeight={400}>
+          <Typography variant="h6" color="rgba(255,255,255,0.85)" fontWeight={400} sx={{ fontSize: { xs: '1.15rem', sm: '1.25rem' } }}>
             Read a book? Tell us what you think!
           </Typography>
         </Container>
@@ -234,7 +236,7 @@ export const Home: React.FC = () => {
                 size="large"
                 startIcon={<RocketLaunchIcon />}
                 onClick={handleSubmit}
-                disabled={submitting}
+                disabled={submitting || !formComplete}
                 sx={{
                   borderRadius: 4,
                   py: 2,
@@ -244,6 +246,12 @@ export const Home: React.FC = () => {
                   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                   boxShadow: '0 4px 20px rgba(102, 126, 234, 0.5)',
                   '&:hover': { boxShadow: '0 6px 30px rgba(102, 126, 234, 0.7)' },
+                  '&.Mui-disabled': {
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    opacity: 0.45,
+                    color: 'white',
+                    boxShadow: 'none',
+                  },
                 }}
               >
                 🚀 Submit My Review

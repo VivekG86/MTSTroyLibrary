@@ -46,3 +46,11 @@ export function validateReviewForm(state: ReviewFormState): ValidationErrors {
 export function hasErrors(errors: ValidationErrors): boolean {
   return Object.keys(errors).length > 0;
 }
+
+/**
+ * True only when every required input/option is provided and valid.
+ * Used to gate the submit button.
+ */
+export function isReviewFormComplete(state: ReviewFormState): boolean {
+  return !hasErrors(validateReviewForm(state));
+}
