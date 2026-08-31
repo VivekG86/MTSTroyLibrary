@@ -1,0 +1,7 @@
+name = "mtstroylibrary"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mts-troy"
+database_id = "136eac66-fbeb-4442-9d86-3760a356ccbf"

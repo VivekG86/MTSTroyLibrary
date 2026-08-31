@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "type-check:functions": "tsc -p functions/tsconfig.json --noEmit",
+    "dev:pages": "npm run build && wrangler pages dev dist",
+    "db:migrate:local": "wrangler d1 execute mts-troy --local --file=migrations/0001_initial_reviews_table.sql",
+    "db:migrate:remote": "wrangler d1 execute mts-troy --remote --file=migrations/0001_initial_reviews_table.sql"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -19,6 +23,7 @@
     "react-router-dom": "^6.30.6"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260702.1",
     "@eslint/js": "^9.13.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
@@ -28,6 +33,7 @@
     "eslint-plugin-react-refresh": "^0.4.14",
     "globals": "^15.11.0",
     "typescript": "~5.6.2",
-    "vite": "^6.0.1"
+    "vite": "^6.0.1",
+    "wrangler": "^4.86.0"
   }
 }

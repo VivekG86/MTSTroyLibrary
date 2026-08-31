@@ -1,11 +1,11 @@
 import { ReviewSubmission, SubmissionResult } from '../types/review';
-import { config } from '../config/config';
 
 export async function fileToBase64(file: File | Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
       const result = reader.result as string;
+      // Strip the data-URL prefix, keep only the base64 payload
       const base64 = result.split(',')[1];
       resolve(base64);
     };
@@ -15,29 +15,42 @@ export async function fileToBase64(file: File | Blob): Promise<string> {
 }
 
 export function generateReviewId(): string {
-  const now = new Date();
-  const year = now.getFullYear();
+  // Used client-side for building the file name before submission.
+  // The authoritative review ID is generated server-side by the Worker.
+  const year = new Date().getFullYear();
   const random = Math.floor(Math.random() * 900000) + 100000;
   return `REV-${year}-${random}`;
 }
 
 export async function submitReview(submission: ReviewSubmission): Promise<SubmissionResult> {
-  if (!config.reviewApiUrl) {
-    console.warn('No VITE_REVIEW_API_URL configured. Running in demo mode.');
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    return { success: true, reviewId: submission.reviewId };
-  }
+  // Phase 1: POST only metadata to /api/reviews.
+  // fileData is intentionally excluded — the binary will be uploaded to
+  // Google Drive in Phase 2, at which point this body will be extended.
+  const body = {
+    studentName: submission.studentName,
+    grade:       submission.grade,
+    book:        submission.book,
+    rating:      submission.rating,
+    reviewType:  submission.reviewType,
+    fileName:    submission.fileName,
+    mimeType:    submission.mimeType,
+    submittedAt: submission.submittedAt,
+  };
 
-  const response = await fetch(config.reviewApiUrl, {
+  const response = await fetch('/api/reviews', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(submission),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
-    throw new Error(`Submission failed: ${response.status}`);
+    let message: string | undefined;
+    try {
+      const data = await response.json() as { message?: string };
+      message = data.message;
+    } catch { /* ignore parse errors */ }
+    throw new Error(message ?? `Submission failed: ${response.status}`);
   }
 
-  const result: SubmissionResult = await response.json();
-  return result;
+  return response.json() as Promise<SubmissionResult>;
 }
