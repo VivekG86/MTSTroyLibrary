@@ -10,7 +10,7 @@ const SHEET_ID = 'YOUR_GOOGLE_SHEET_ID_HERE';
 const SHEET_NAME = 'Reviews';
 
 const HEADERS = [
-  'Review ID', 'Student Name', 'Book ID', 'Book Title',
+  'Review ID', 'Student Name', 'Grade', 'Book ID', 'Book Title',
   'Author', 'ISBN', 'Rating', 'Review Type',
   'Drive File ID', 'Drive File Name', 'Submitted At', 'Status',
 ];
@@ -68,7 +68,7 @@ function saveMetadataToSheet(data, driveFile) {
   const isbn = data.book.isbn13 || data.book.isbn10 || '';
   const authors = Array.isArray(data.book.authors) ? data.book.authors.join(', ') : '';
   sheet.appendRow([
-    data.reviewId, data.studentName, data.book.id, data.book.title,
+    data.reviewId, data.studentName, data.grade || '', data.book.id, data.book.title,
     authors, isbn, data.rating, data.reviewType,
     driveFile.getId(), driveFile.getName(),
     data.submittedAt || new Date().toISOString(), 'PENDING',

@@ -5,6 +5,7 @@ export type ReviewType = 'image' | 'audio';
 export interface ReviewFormState {
   book: Book | null;
   studentName: string;
+  grade: string;
   rating: number | null;
   reviewType: ReviewType | null;
   reviewFile: File | Blob | null;
@@ -13,6 +14,7 @@ export interface ReviewFormState {
 export interface ReviewSubmission {
   reviewId: string;
   studentName: string;
+  grade: string;
   book: {
     id: string;
     title: string;

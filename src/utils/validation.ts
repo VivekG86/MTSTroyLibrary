@@ -3,6 +3,7 @@ import { ReviewFormState } from '../types/review';
 export interface ValidationErrors {
   book?: string;
   studentName?: string;
+  grade?: string;
   rating?: string;
   reviewType?: string;
   reviewFile?: string;
@@ -22,6 +23,10 @@ export function validateReviewForm(state: ReviewFormState): ValidationErrors {
     errors.studentName = 'Name must be at least 2 characters.';
   } else if (name.length > 60) {
     errors.studentName = 'Name is too long.';
+  }
+
+  if (!state.grade.trim()) {
+    errors.grade = 'Please select your grade.';
   }
 
   if (!state.rating) {

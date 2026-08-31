@@ -8,6 +8,7 @@ import { ReviewFormState, ReviewType } from '../../types/review';
 import { BookSearch } from '../../components/BookSearch/BookSearch';
 import { BookCard } from '../../components/BookCard/BookCard';
 import { StudentName } from '../../components/StudentName/StudentName';
+import { GradeSelect } from '../../components/GradeSelect/GradeSelect';
 import { StarRating } from '../../components/StarRating/StarRating';
 import { ReviewTypeSelector } from '../../components/ReviewTypeSelector/ReviewTypeSelector';
 import { ImageReview } from '../../components/ImageReview/ImageReview';
@@ -23,6 +24,7 @@ export const Home: React.FC = () => {
   const [form, setForm] = useState<ReviewFormState>({
     book: null,
     studentName: '',
+    grade: '',
     rating: null,
     reviewType: null,
     reviewFile: null,
@@ -35,6 +37,7 @@ export const Home: React.FC = () => {
 
   const setBook = (book: Book | null) => setForm(f => ({ ...f, book }));
   const setStudentName = (studentName: string) => setForm(f => ({ ...f, studentName }));
+  const setGrade = (grade: string) => setForm(f => ({ ...f, grade }));
   const setRating = (rating: number) => setForm(f => ({ ...f, rating }));
   const setReviewType = (reviewType: ReviewType) =>
     setForm(f => ({ ...f, reviewType, reviewFile: null }));
@@ -61,6 +64,7 @@ export const Home: React.FC = () => {
       const submission = {
         reviewId,
         studentName: form.studentName.trim(),
+        grade: form.grade,
         book: {
           id: form.book!.id,
           title: form.book!.title,
@@ -166,9 +170,12 @@ export const Home: React.FC = () => {
           <Box sx={{ p: { xs: 2.5, sm: 3.5 }, borderBottom: '1px solid', borderColor: 'grey.100' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
               <Box sx={stepBox(2, '#764ba2')}>2</Box>
-              <Typography variant="h6" fontWeight={700}>Your Name</Typography>
+              <Typography variant="h6" fontWeight={700}>About You</Typography>
             </Box>
             <StudentName value={form.studentName} onChange={setStudentName} error={errors.studentName} />
+            <Box sx={{ mt: 3 }}>
+              <GradeSelect value={form.grade} onChange={setGrade} error={errors.grade} />
+            </Box>
           </Box>
 
           {/* Step 3 */}
