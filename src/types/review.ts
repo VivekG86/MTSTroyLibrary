@@ -2,10 +2,15 @@ import { Book } from './book';
 
 export type ReviewType = 'image' | 'audio';
 
+export type SchoolLocation = 'Troy' | 'Farmington' | 'Canton' | 'Livonia';
+
 export interface ReviewFormState {
+  organization: 'MTS';
+  schoolLocation: SchoolLocation;
   book: Book | null;
   studentName: string;
   grade: string;
+  section: string;
   rating: number | null;
   reviewType: ReviewType | null;
   reviewFile: File | Blob | null;
@@ -13,6 +18,8 @@ export interface ReviewFormState {
 
 export interface ReviewSubmission {
   reviewId: string;
+  organization: 'MTS';
+  schoolLocation: SchoolLocation;
   studentName: string;
   grade: string;
   book: {
@@ -27,7 +34,7 @@ export interface ReviewSubmission {
   reviewType: ReviewType;
   fileName: string;
   mimeType: string;
-  fileData: string;
+  fileData: Blob;
   submittedAt: string;
 }
 

@@ -1,0 +1,8 @@
+# Local development secrets for Cloudflare Pages Functions.
+# Copy this file to .dev.vars (already gitignored) and fill in real values.
+# Run: wrangler pages dev dist --binding ...  OR just use `wrangler pages dev` which reads .dev.vars automatically.
+
+GOOGLE_CLIENT_ID=YOUR_OAUTH_CLIENT_ID.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=YOUR_OAUTH_CLIENT_SECRET
+GOOGLE_REFRESH_TOKEN=YOUR_LONG_LIVED_REFRESH_TOKEN
+GOOGLE_DRIVE_FOLDER_ID=1oZbS2B81JHRC4u0EQheW-CYttAF8rdsz

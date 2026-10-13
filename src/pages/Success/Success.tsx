@@ -18,7 +18,7 @@ export const Success: React.FC = () => {
   const state = location.state as SuccessState | null;
 
   useEffect(() => {
-    if (!state) navigate('/');
+    if (!state) navigate('/book-review');
   }, [state, navigate]);
 
   if (!state) return null;
@@ -72,7 +72,7 @@ export const Success: React.FC = () => {
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/book-review')}
               size="large"
               sx={{
                 borderRadius: 4, py: 1.75, fontWeight: 800, textTransform: 'none', fontSize: '1rem',
@@ -84,7 +84,7 @@ export const Success: React.FC = () => {
             <Button
               variant="outlined"
               startIcon={<HomeIcon />}
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/book-review')}
               size="large"
               sx={{ borderRadius: 4, py: 1.75, fontWeight: 700, textTransform: 'none' }}
             >

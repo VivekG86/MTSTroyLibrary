@@ -1,6 +1,9 @@
-import { ReviewFormState } from '../types/review';
+import { ReviewFormState, SchoolLocation } from '../types/review';
+
+const VALID_LOCATIONS: SchoolLocation[] = ['Troy', 'Farmington', 'Canton', 'Livonia'];
 
 export interface ValidationErrors {
+  schoolLocation?: string;
   book?: string;
   studentName?: string;
   grade?: string;
@@ -11,6 +14,10 @@ export interface ValidationErrors {
 
 export function validateReviewForm(state: ReviewFormState): ValidationErrors {
   const errors: ValidationErrors = {};
+
+  if (!VALID_LOCATIONS.includes(state.schoolLocation)) {
+    errors.schoolLocation = 'Please select a valid school location.';
+  }
 
   if (!state.book) {
     errors.book = 'Please search for and select a book.';
@@ -26,7 +33,9 @@ export function validateReviewForm(state: ReviewFormState): ValidationErrors {
   }
 
   if (!state.grade.trim()) {
-    errors.grade = 'Please select your grade.';
+    errors.grade = 'Please select your grade and section.';
+  } else if (!state.section) {
+    errors.grade = 'Please select your section (A or B).';
   }
 
   if (!state.rating) {

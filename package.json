@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "type-check:functions": "tsc -p functions/tsconfig.json --noEmit",
     "dev:pages": "npm run build && wrangler pages dev dist",
+    "deploy": "npm run build && wrangler pages deploy dist --project-name mtslibrary",
     "db:migrate:local": "wrangler d1 execute mts-troy --local --file=migrations/0001_initial_reviews_table.sql",
     "db:migrate:remote": "wrangler d1 execute mts-troy --remote --file=migrations/0001_initial_reviews_table.sql"
   },

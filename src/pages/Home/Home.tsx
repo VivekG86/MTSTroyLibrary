@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import {
-  Container, Box, Typography, Alert, Button, Paper
+  Container, Box, Typography, Alert, Button, Paper, List, ListItem, ListItemIcon, ListItemText
 } from '@mui/material';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import { Book } from '../../types/book';
 import { ReviewFormState, ReviewType } from '../../types/review';
@@ -9,22 +10,27 @@ import { BookSearch } from '../../components/BookSearch/BookSearch';
 import { BookCard } from '../../components/BookCard/BookCard';
 import { StudentName } from '../../components/StudentName/StudentName';
 import { GradeSelect } from '../../components/GradeSelect/GradeSelect';
+import { SchoolSelect } from '../../components/SchoolSelect/SchoolSelect';
 import { StarRating } from '../../components/StarRating/StarRating';
 import { ReviewTypeSelector } from '../../components/ReviewTypeSelector/ReviewTypeSelector';
 import { ImageReview } from '../../components/ImageReview/ImageReview';
 import { VoiceReview } from '../../components/VoiceReview/VoiceReview';
 import { LoadingState } from '../../components/LoadingState/LoadingState';
 import { validateReviewForm, hasErrors, isReviewFormComplete, ValidationErrors } from '../../utils/validation';
-import { fileToBase64, generateReviewId, submitReview } from '../../services/reviewApi';
+import { generateReviewId, submitReview } from '../../services/reviewApi';
+import { SchoolLocation } from '../../types/review';
 import { getFileExtension, buildFileName } from '../../utils/fileUtils';
 import { useNavigate } from 'react-router-dom';
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState<ReviewFormState>({
+    organization: 'MTS',
+    schoolLocation: 'Troy',
     book: null,
     studentName: '',
     grade: '',
+    section: '',
     rating: null,
     reviewType: null,
     reviewFile: null,
@@ -35,9 +41,22 @@ export const Home: React.FC = () => {
 
   const formComplete = isReviewFormComplete(form);
 
+  const checklist = [
+    { label: 'Select your school',          done: !!form.schoolLocation },
+    { label: 'Find your book',               done: !!form.book },
+    { label: 'Enter your name',              done: form.studentName.trim().length >= 2 },
+    { label: 'Select your grade and section', done: !!form.grade.trim() && !!form.section },
+    { label: 'Give a star rating',           done: !!form.rating },
+    { label: 'Choose a review method',       done: !!form.reviewType },
+    { label: form.reviewType === 'audio' ? 'Record your review' : 'Upload your review photo',
+      done: !!form.reviewFile },
+  ];
+
+  const setSchoolLocation = (schoolLocation: SchoolLocation) => setForm(f => ({ ...f, schoolLocation }));
   const setBook = (book: Book | null) => setForm(f => ({ ...f, book }));
   const setStudentName = (studentName: string) => setForm(f => ({ ...f, studentName }));
   const setGrade = (grade: string) => setForm(f => ({ ...f, grade }));
+  const setSection = (section: string) => setForm(f => ({ ...f, section }));
   const setRating = (rating: number) => setForm(f => ({ ...f, rating }));
   const setReviewType = (reviewType: ReviewType) =>
     setForm(f => ({ ...f, reviewType, reviewFile: null }));
@@ -59,12 +78,18 @@ export const Home: React.FC = () => {
       const mimeType = file instanceof File ? file.type : 'audio/webm';
       const ext = getFileExtension(mimeType);
       const fileName = buildFileName(reviewId, form.book!.title, ext);
-      const fileData = await fileToBase64(file);
 
       const submission = {
         reviewId,
+        organization: form.organization,
+        schoolLocation: form.schoolLocation,
         studentName: form.studentName.trim(),
-        grade: form.grade,
+        grade: (() => {
+          // Convert "4th Grade" → "4", "Kindergarten" → "K", then append section
+          const match = form.grade.match(/^(\d+)/);
+          const gradeCode = match ? match[1] : (form.grade.toLowerCase().startsWith('k') ? 'K' : form.grade);
+          return form.section ? `${gradeCode}${form.section}` : gradeCode;
+        })(),
         book: {
           id: form.book!.id,
           title: form.book!.title,
@@ -77,7 +102,7 @@ export const Home: React.FC = () => {
         reviewType: form.reviewType!,
         fileName,
         mimeType,
-        fileData,
+        fileData: file,
         submittedAt: new Date().toISOString(),
       };
 
@@ -150,10 +175,25 @@ export const Home: React.FC = () => {
             boxShadow: '0 4px 40px rgba(0,0,0,0.08)',
           }}
         >
-          {/* Step 1 */}
+          {/* Step 1 — School */}
           <Box sx={{ p: { xs: 2.5, sm: 3.5 }, borderBottom: '1px solid', borderColor: 'grey.100' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
               <Box sx={stepBox(1, '#667eea')}>1</Box>
+              <Typography variant="h6" fontWeight={700}>Select Your School</Typography>
+            </Box>
+            <SchoolSelect
+              location={form.schoolLocation}
+              onChange={setSchoolLocation}
+            />
+            {errors.schoolLocation && (
+              <Typography variant="body2" color="error" sx={{ mt: 1 }}>{errors.schoolLocation}</Typography>
+            )}
+          </Box>
+
+          {/* Step 2 — Book */}
+          <Box sx={{ p: { xs: 2.5, sm: 3.5 }, borderBottom: '1px solid', borderColor: 'grey.100' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+              <Box sx={stepBox(2, '#764ba2')}>2</Box>
               <Typography variant="h6" fontWeight={700}>Find Your Book</Typography>
             </Box>
             {form.book ? (
@@ -166,31 +206,31 @@ export const Home: React.FC = () => {
             )}
           </Box>
 
-          {/* Step 2 */}
+          {/* Step 3 — About You */}
           <Box sx={{ p: { xs: 2.5, sm: 3.5 }, borderBottom: '1px solid', borderColor: 'grey.100' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-              <Box sx={stepBox(2, '#764ba2')}>2</Box>
+              <Box sx={stepBox(3, '#10b981')}>3</Box>
               <Typography variant="h6" fontWeight={700}>About You</Typography>
             </Box>
             <StudentName value={form.studentName} onChange={setStudentName} error={errors.studentName} />
             <Box sx={{ mt: 3 }}>
-              <GradeSelect value={form.grade} onChange={setGrade} error={errors.grade} />
+              <GradeSelect value={form.grade} onChange={setGrade} section={form.section} onSectionChange={setSection} error={errors.grade} />
             </Box>
           </Box>
 
-          {/* Step 3 */}
+          {/* Step 4 — Rating */}
           <Box sx={{ p: { xs: 2.5, sm: 3.5 }, borderBottom: '1px solid', borderColor: 'grey.100' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-              <Box sx={stepBox(3, '#f59e0b')}>3</Box>
+              <Box sx={stepBox(4, '#f59e0b')}>4</Box>
               <Typography variant="h6" fontWeight={700}>Star Rating</Typography>
             </Box>
             <StarRating value={form.rating} onChange={setRating} error={errors.rating} />
           </Box>
 
-          {/* Step 4 */}
+          {/* Step 5 — Review method */}
           <Box sx={{ p: { xs: 2.5, sm: 3.5 }, borderBottom: '1px solid', borderColor: 'grey.100' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-              <Box sx={stepBox(4, '#10b981')}>4</Box>
+              <Box sx={stepBox(5, '#e91e8c')}>5</Box>
               <Typography variant="h6" fontWeight={700}>Share Your Review</Typography>
             </Box>
             <ReviewTypeSelector
@@ -201,11 +241,11 @@ export const Home: React.FC = () => {
             />
           </Box>
 
-          {/* Step 5 */}
+          {/* Step 6 — Capture */}
           {form.reviewType && (
             <Box sx={{ p: { xs: 2.5, sm: 3.5 }, borderBottom: '1px solid', borderColor: 'grey.100' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-                <Box sx={stepBox(5, form.reviewType === 'image' ? '#2196f3' : '#e91e8c')}>5</Box>
+                <Box sx={stepBox(6, form.reviewType === 'image' ? '#2196f3' : '#e91e8c')}>6</Box>
                 <Typography variant="h6" fontWeight={700}>
                   {form.reviewType === 'image' ? 'Your Photo Review' : 'Your Voice Review'}
                 </Typography>
@@ -231,6 +271,29 @@ export const Home: React.FC = () => {
 
           {/* Submit */}
           <Box sx={{ p: { xs: 2.5, sm: 3.5 } }}>
+            {/* Checklist — only shown while form is incomplete */}
+            {!formComplete && !submitting && (
+              <Box sx={{ mb: 2.5, bgcolor: '#f8f6ff', borderRadius: 3, px: 2, py: 1.5, border: '1px solid', borderColor: 'grey.200' }}>
+                <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  Still needed:
+                </Typography>
+                <List dense disablePadding>
+                  {checklist.filter(item => !item.done).map(item => (
+                    <ListItem key={item.label} disableGutters sx={{ py: 0.25 }}>
+                      <ListItemIcon sx={{ minWidth: 28 }}>
+                        <RadioButtonUncheckedIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <Typography variant="body2" color="text.secondary">{item.label}</Typography>
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+            )}
+
             {submitError && (
               <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{submitError}</Alert>
             )}

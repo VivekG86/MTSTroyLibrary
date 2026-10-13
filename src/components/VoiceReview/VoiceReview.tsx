@@ -101,7 +101,7 @@ export const VoiceReview: React.FC<VoiceReviewProps> = ({ onAudioReady }) => {
             🔴 Recording...
           </Typography>
           <Typography variant="h4" fontWeight={800} sx={{ mb: 2, fontVariantNumeric: 'tabular-nums' }}>
-            {formatTime(elapsedSeconds)}
+            {formatTime(config.maxAudioDurationSeconds - elapsedSeconds)}
           </Typography>
 
           <Box sx={{ mb: 3, px: 2 }}>
@@ -111,9 +111,6 @@ export const VoiceReview: React.FC<VoiceReviewProps> = ({ onAudioReady }) => {
               color="error"
               sx={{ height: 8, borderRadius: 4 }}
             />
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-              {formatTime(config.maxAudioDurationSeconds - elapsedSeconds)} remaining
-            </Typography>
           </Box>
 
           <Button

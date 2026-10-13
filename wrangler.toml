@@ -1,7 +1,8 @@
-name = "mtstroylibrary"
+name = "mtslibrary"
 pages_build_output_dir = "dist"
+compatibility_date = "2026-05-01"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "mts-troy"
-database_id = "136eac66-fbeb-4442-9d86-3760a356ccbf"
+database_id = "229a5eb1-83fc-4fd1-b8f3-d6289c9a19cf"

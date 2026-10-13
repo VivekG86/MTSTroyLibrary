@@ -1,10 +1,11 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { Header } from './components/Header/Header';
 import { Home } from './pages/Home/Home';
 import { Success } from './pages/Success/Success';
 import { Reviews } from './pages/Reviews/Reviews';
 import { About } from './pages/About/About';
+import { Homework } from './pages/Homework/Homework';
 import { RoleProvider } from './auth/RoleContext';
 import { getRole } from './auth/role';
 
@@ -58,7 +59,9 @@ function App() {
         <BrowserRouter>
           <Header />
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Homework />} />
+            <Route path="/homework" element={<Navigate to="/" replace />} />
+            <Route path="/book-review" element={<Home />} />
             <Route path="/success" element={<Success />} />
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/about" element={<About />} />

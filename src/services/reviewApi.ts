@@ -1,19 +1,5 @@
 import { ReviewSubmission, SubmissionResult } from '../types/review';
 
-export async function fileToBase64(file: File | Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      // Strip the data-URL prefix, keep only the base64 payload
-      const base64 = result.split(',')[1];
-      resolve(base64);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
 export function generateReviewId(): string {
   // Used client-side for building the file name before submission.
   // The authoritative review ID is generated server-side by the Worker.
@@ -23,24 +9,27 @@ export function generateReviewId(): string {
 }
 
 export async function submitReview(submission: ReviewSubmission): Promise<SubmissionResult> {
-  // Phase 1: POST only metadata to /api/reviews.
-  // fileData is intentionally excluded — the binary will be uploaded to
-  // Google Drive in Phase 2, at which point this body will be extended.
-  const body = {
-    studentName: submission.studentName,
-    grade:       submission.grade,
-    book:        submission.book,
-    rating:      submission.rating,
-    reviewType:  submission.reviewType,
-    fileName:    submission.fileName,
-    mimeType:    submission.mimeType,
-    submittedAt: submission.submittedAt,
-  };
+  const form = new FormData();
+
+  // Scalar fields
+  form.append('organization',   submission.organization);
+  form.append('schoolLocation', submission.schoolLocation);
+  form.append('studentName',    submission.studentName);
+  form.append('grade',          submission.grade);
+  form.append('book',           JSON.stringify(submission.book));
+  form.append('rating',         String(submission.rating));
+  form.append('reviewType',     submission.reviewType);
+  form.append('fileName',       submission.fileName);
+  form.append('mimeType',       submission.mimeType);
+  form.append('submittedAt',    submission.submittedAt);
+
+  // Binary file — sent as a Blob so the Worker receives it as a File part
+  form.append('file', submission.fileData, submission.fileName);
 
   const response = await fetch('/api/reviews', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    // Do NOT set Content-Type — the browser sets it automatically with the boundary
+    body: form,
   });
 
   if (!response.ok) {

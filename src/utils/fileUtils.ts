@@ -32,8 +32,11 @@ export function getFileExtension(mimeType: string): string {
 }
 
 export function validateImageFile(file: File): string | null {
-  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'image/heif', 'image/webp'];
-  if (!allowedTypes.some(t => file.type.toLowerCase().startsWith(t.split('/')[0]) && file.type.toLowerCase().includes(t.split('/')[1]))) {
+  const type = file.type.toLowerCase();
+  // Accept any image/* MIME type, plus empty type (common for iOS HEIC camera photos).
+  // The file input already restricts to accept="image/*", so non-image files won't arrive here.
+  const isImage = type === '' || type.startsWith('image/');
+  if (!isImage) {
     return 'Please upload a JPG, PNG, or HEIC image.';
   }
   if (file.size > config.maxFileSizeBytes) {
