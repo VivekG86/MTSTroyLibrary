@@ -4,7 +4,7 @@ A fun, child-friendly web app where kids can share their book reviews by submitt
 
 ## Features
 
-- Book search with autocomplete (Google Books API)
+- Book title and author entered by the student
 - Beautiful book detail cards
 - 1-5 star rating
 - Photo review (camera or file upload)
@@ -71,7 +71,6 @@ VITE_REVIEW_API_URL=https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec
    - **Output directory:** `dist`
 5. Add Environment Variables:
    - `VITE_REVIEW_API_URL` = your Apps Script URL
-   - `VITE_GOOGLE_BOOKS_API_URL` = `https://www.googleapis.com/books/v1`
 6. Deploy!
 
 The `public/_redirects` file handles client-side routing.
@@ -81,7 +80,6 @@ The `public/_redirects` file handles client-side routing.
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `VITE_REVIEW_API_URL` | Yes (production) | Google Apps Script Web App URL |
-| `VITE_GOOGLE_BOOKS_API_URL` | No | Google Books API base URL (has default) |
 
 ## Privacy
 

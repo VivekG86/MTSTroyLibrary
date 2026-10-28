@@ -24,11 +24,19 @@ const options = [
   },
   {
     type: 'audio' as ReviewType,
-    title: 'Record My Review',
+    title: 'Record My Voice',
     description: 'Tell us about the book out loud',
     emoji: '🎤',
     color: '#fce8f3',
     borderColor: '#e91e8c',
+  },
+  {
+    type: 'video' as ReviewType,
+    title: 'Record My Video',
+    description: 'Show the book and talk on camera',
+    emoji: '🎬',
+    color: '#fff3e6',
+    borderColor: '#ff7a00',
   },
 ];
 
@@ -39,7 +47,7 @@ export const ReviewTypeSelector: React.FC<ReviewTypeSelectorProps> = ({
   error,
 }) => {
   const theme = useTheme();
-  // Collapse unselected option on mobile (xs/sm); keep both visible on md+
+  // Collapse unselected options on mobile (xs/sm); keep all visible on md+
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   // Respect prefers-reduced-motion by disabling the transition duration
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
@@ -56,14 +64,14 @@ export const ReviewTypeSelector: React.FC<ReviewTypeSelectorProps> = ({
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr' },
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
           gap: 2,
         }}
       >
         {options.map(({ type, title, description, emoji, color, borderColor }) => {
           const isSelected = selected === type;
-          // On mobile, hide the unselected card once a choice has been made.
-          // On desktop, always show both cards.
+          // On mobile, hide the unselected cards once a choice has been made.
+          // On desktop, always show all cards.
           const isVisible = !isMobile || selected === null || isSelected;
 
           return (
@@ -72,10 +80,13 @@ export const ReviewTypeSelector: React.FC<ReviewTypeSelectorProps> = ({
               in={isVisible}
               unmountOnExit
               timeout={collapseTimeout}
+              // Let the card fill the grid row so all options share the same height
+              sx={{ '& .MuiCollapse-wrapper, & .MuiCollapse-wrapperInner': { height: '100%' } }}
             >
               <Card
                 elevation={0}
                 sx={{
+                  height: '100%',
                   borderRadius: 4,
                   border: '2.5px solid',
                   borderColor: isSelected ? borderColor : 'grey.200',
@@ -87,11 +98,11 @@ export const ReviewTypeSelector: React.FC<ReviewTypeSelectorProps> = ({
               >
                 <CardActionArea
                   onClick={() => onSelect(type)}
-                  sx={{ borderRadius: 4 }}
+                  sx={{ borderRadius: 4, height: '100%', display: 'flex', alignItems: 'flex-start' }}
                   aria-pressed={isSelected}
                   aria-label={`${title}: ${description}`}
                 >
-                  <CardContent sx={{ p: 3, textAlign: 'center' }}>
+                  <CardContent sx={{ p: { xs: 3, sm: 2.5 }, textAlign: 'center', width: '100%' }}>
                     <Typography sx={{ fontSize: 48, mb: 1, lineHeight: 1 }}>{emoji}</Typography>
                     <Typography variant="h6" fontWeight={800} sx={{ mb: 0.5 }}>{title}</Typography>
                     <Typography variant="body2" color="text.secondary">{description}</Typography>
@@ -120,7 +131,7 @@ export const ReviewTypeSelector: React.FC<ReviewTypeSelectorProps> = ({
             '&:hover': { color: 'primary.main', bgcolor: 'action.hover' },
             '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: 2 },
           }}
-          aria-label="Change review method — go back to choose between photo and voice"
+          aria-label="Change review method — go back to choose between photo, voice and video"
         >
           Change review method
         </Button>

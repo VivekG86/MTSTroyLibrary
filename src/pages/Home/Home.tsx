@@ -6,8 +6,7 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import { Book } from '../../types/book';
 import { ReviewFormState, ReviewType } from '../../types/review';
-import { BookSearch } from '../../components/BookSearch/BookSearch';
-import { BookCard } from '../../components/BookCard/BookCard';
+import { BookDetails } from '../../components/BookDetails/BookDetails';
 import { StudentName } from '../../components/StudentName/StudentName';
 import { GradeSelect } from '../../components/GradeSelect/GradeSelect';
 import { SchoolSelect } from '../../components/SchoolSelect/SchoolSelect';
@@ -15,6 +14,7 @@ import { StarRating } from '../../components/StarRating/StarRating';
 import { ReviewTypeSelector } from '../../components/ReviewTypeSelector/ReviewTypeSelector';
 import { ImageReview } from '../../components/ImageReview/ImageReview';
 import { VoiceReview } from '../../components/VoiceReview/VoiceReview';
+import { VideoReview } from '../../components/VideoReview/VideoReview';
 import { LoadingState } from '../../components/LoadingState/LoadingState';
 import { validateReviewForm, hasErrors, isReviewFormComplete, ValidationErrors } from '../../utils/validation';
 import { generateReviewId, submitReview } from '../../services/reviewApi';
@@ -27,7 +27,8 @@ export const Home: React.FC = () => {
   const [form, setForm] = useState<ReviewFormState>({
     organization: 'MTS',
     schoolLocation: 'Troy',
-    book: null,
+    bookTitle: '',
+    bookAuthor: '',
     studentName: '',
     grade: '',
     section: '',
@@ -43,17 +44,20 @@ export const Home: React.FC = () => {
 
   const checklist = [
     { label: 'Select your school',          done: !!form.schoolLocation },
-    { label: 'Find your book',               done: !!form.book },
+    { label: 'Enter the book title and author', done: !!form.bookTitle.trim() && !!form.bookAuthor.trim() },
     { label: 'Enter your name',              done: form.studentName.trim().length >= 2 },
     { label: 'Select your grade and section', done: !!form.grade.trim() && !!form.section },
     { label: 'Give a star rating',           done: !!form.rating },
     { label: 'Choose a review method',       done: !!form.reviewType },
-    { label: form.reviewType === 'audio' ? 'Record your review' : 'Upload your review photo',
+    { label: form.reviewType === 'audio' ? 'Record your review'
+        : form.reviewType === 'video' ? 'Record your video review'
+        : 'Upload your review photo',
       done: !!form.reviewFile },
   ];
 
   const setSchoolLocation = (schoolLocation: SchoolLocation) => setForm(f => ({ ...f, schoolLocation }));
-  const setBook = (book: Book | null) => setForm(f => ({ ...f, book }));
+  const setBookTitle = (bookTitle: string) => setForm(f => ({ ...f, bookTitle }));
+  const setBookAuthor = (bookAuthor: string) => setForm(f => ({ ...f, bookAuthor }));
   const setStudentName = (studentName: string) => setForm(f => ({ ...f, studentName }));
   const setGrade = (grade: string) => setForm(f => ({ ...f, grade }));
   const setSection = (section: string) => setForm(f => ({ ...f, section }));
@@ -75,9 +79,15 @@ export const Home: React.FC = () => {
     try {
       const reviewId = generateReviewId();
       const file = form.reviewFile!;
-      const mimeType = file instanceof File ? file.type : 'audio/webm';
+      // Recorded blobs carry their real type (e.g. audio/mp4 on Safari)
+      const mimeType = file.type || (form.reviewType === 'video' ? 'video/webm' : 'audio/webm');
       const ext = getFileExtension(mimeType);
-      const fileName = buildFileName(reviewId, form.book!.title, ext);
+      const book: Book = {
+        id: `manual-${Date.now()}`,
+        title: form.bookTitle.trim(),
+        authors: [form.bookAuthor.trim()],
+      };
+      const fileName = buildFileName(reviewId, book.title, ext);
 
       const submission = {
         reviewId,
@@ -90,14 +100,7 @@ export const Home: React.FC = () => {
           const gradeCode = match ? match[1] : (form.grade.toLowerCase().startsWith('k') ? 'K' : form.grade);
           return form.section ? `${gradeCode}${form.section}` : gradeCode;
         })(),
-        book: {
-          id: form.book!.id,
-          title: form.book!.title,
-          authors: form.book!.authors,
-          isbn10: form.book!.isbn10,
-          isbn13: form.book!.isbn13,
-          thumbnail: form.book!.thumbnail,
-        },
+        book,
         rating: form.rating!,
         reviewType: form.reviewType!,
         fileName,
@@ -111,7 +114,7 @@ export const Home: React.FC = () => {
       if (result.success) {
         navigate('/success', {
           state: {
-            book: form.book,
+            book,
             rating: form.rating,
             reviewId: result.reviewId || reviewId,
             studentName: form.studentName.trim(),
@@ -194,16 +197,16 @@ export const Home: React.FC = () => {
           <Box sx={{ p: { xs: 2.5, sm: 3.5 }, borderBottom: '1px solid', borderColor: 'grey.100' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
               <Box sx={stepBox(2, '#764ba2')}>2</Box>
-              <Typography variant="h6" fontWeight={700}>Find Your Book</Typography>
+              <Typography variant="h6" fontWeight={700}>Your Book</Typography>
             </Box>
-            {form.book ? (
-              <BookCard book={form.book} onChangeBook={() => setBook(null)} />
-            ) : (
-              <BookSearch onSelectBook={setBook} />
-            )}
-            {errors.book && !form.book && (
-              <Typography variant="body2" color="error" sx={{ mt: 1 }}>{errors.book}</Typography>
-            )}
+            <BookDetails
+              title={form.bookTitle}
+              author={form.bookAuthor}
+              onTitleChange={setBookTitle}
+              onAuthorChange={setBookAuthor}
+              titleError={errors.bookTitle}
+              authorError={errors.bookAuthor}
+            />
           </Box>
 
           {/* Step 3 — About You */}
@@ -245,9 +248,9 @@ export const Home: React.FC = () => {
           {form.reviewType && (
             <Box sx={{ p: { xs: 2.5, sm: 3.5 }, borderBottom: '1px solid', borderColor: 'grey.100' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-                <Box sx={stepBox(6, form.reviewType === 'image' ? '#2196f3' : '#e91e8c')}>6</Box>
+                <Box sx={stepBox(6, { image: '#2196f3', audio: '#e91e8c', video: '#ff7a00' }[form.reviewType])}>6</Box>
                 <Typography variant="h6" fontWeight={700}>
-                  {form.reviewType === 'image' ? 'Your Photo Review' : 'Your Voice Review'}
+                  {{ image: 'Your Photo Review', audio: 'Your Voice Review', video: 'Your Video Review' }[form.reviewType]}
                 </Typography>
               </Box>
 
@@ -256,6 +259,8 @@ export const Home: React.FC = () => {
                   onFileSelected={(file) => setReviewFile(file)}
                   selectedFile={form.reviewFile instanceof File ? form.reviewFile : null}
                 />
+              ) : form.reviewType === 'video' ? (
+                <VideoReview onVideoReady={(blob) => setReviewFile(blob)} />
               ) : (
                 <VoiceReview
                   onAudioReady={(blob) => setReviewFile(blob)}

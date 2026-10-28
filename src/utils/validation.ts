@@ -4,7 +4,8 @@ const VALID_LOCATIONS: SchoolLocation[] = ['Troy', 'Farmington', 'Canton', 'Livo
 
 export interface ValidationErrors {
   schoolLocation?: string;
-  book?: string;
+  bookTitle?: string;
+  bookAuthor?: string;
   studentName?: string;
   grade?: string;
   rating?: string;
@@ -19,8 +20,12 @@ export function validateReviewForm(state: ReviewFormState): ValidationErrors {
     errors.schoolLocation = 'Please select a valid school location.';
   }
 
-  if (!state.book) {
-    errors.book = 'Please search for and select a book.';
+  if (!state.bookTitle.trim()) {
+    errors.bookTitle = 'Please enter the book title.';
+  }
+
+  if (!state.bookAuthor.trim()) {
+    errors.bookAuthor = "Please enter the author's name.";
   }
 
   const name = state.studentName.trim();
@@ -51,6 +56,8 @@ export function validateReviewForm(state: ReviewFormState): ValidationErrors {
       errors.reviewFile = 'Please take or upload a photo of your review.';
     } else if (state.reviewType === 'audio') {
       errors.reviewFile = 'Please record your review.';
+    } else if (state.reviewType === 'video') {
+      errors.reviewFile = 'Please record your video review.';
     }
   }
 

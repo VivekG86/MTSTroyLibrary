@@ -21,11 +21,14 @@ interface Env {
 }
 
 type SchoolLocation = 'Troy' | 'Farmington' | 'Canton' | 'Livonia';
+type ReviewType = 'image' | 'audio' | 'video';
+const VALID_REVIEW_TYPES: ReviewType[] = ['image', 'audio', 'video'];
 const VALID_LOCATIONS: SchoolLocation[] = ['Troy', 'Farmington', 'Canton', 'Livonia'];
 
 // ── File constraints ──────────────────────────────────────────────────────────
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;   // 10 MB
 const MAX_AUDIO_BYTES = 50 * 1024 * 1024;   // 50 MB
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024;   // 50 MB (client records ~1 Mbps, so 2 min ≈ 15 MB)
 
 const ALLOWED_IMAGE_TYPES = new Set([
   'image/jpeg', 'image/jpg', 'image/png', 'image/webp',
@@ -35,6 +38,9 @@ const ALLOWED_IMAGE_TYPES = new Set([
 const ALLOWED_AUDIO_TYPES = new Set([
   'audio/webm', 'audio/webm;codecs=opus', 'audio/mp4',
   'audio/ogg', 'audio/wav', 'audio/mpeg',
+]);
+const ALLOWED_VIDEO_TYPES = new Set([
+  'video/webm', 'video/mp4',
 ]);
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -51,7 +57,7 @@ interface ReviewFields {
     isbn13?:  string;
   };
   rating:     number;
-  reviewType: 'image' | 'audio';
+  reviewType: ReviewType;
   mimeType:   string;
 }
 
@@ -95,14 +101,14 @@ function validateFields(f: Partial<ReviewFields>): ValidationResult {
   if (!Number.isInteger(rating) || rating < 1 || rating > 5)
     return { ok: false, message: 'Rating must be an integer from 1 to 5.' };
 
-  if (f.reviewType !== 'image' && f.reviewType !== 'audio')
-    return { ok: false, message: 'reviewType must be image or audio.' };
+  if (!VALID_REVIEW_TYPES.includes(f.reviewType as ReviewType))
+    return { ok: false, message: 'reviewType must be image, audio or video.' };
 
   return { ok: true, message: '' };
 }
 
 function validateFile(
-  reviewType: 'image' | 'audio',
+  reviewType: ReviewType,
   mimeType:   string,
   byteLength: number,
 ): ValidationResult {
@@ -111,6 +117,11 @@ function validateFile(
       return { ok: false, message: `Unsupported image type: ${mimeType || '(empty)'}` };
     if (byteLength > MAX_IMAGE_BYTES)
       return { ok: false, message: 'Image exceeds 10 MB limit.' };
+  } else if (reviewType === 'video') {
+    if (!ALLOWED_VIDEO_TYPES.has(mimeType))
+      return { ok: false, message: `Unsupported video type: ${mimeType || '(empty)'}` };
+    if (byteLength > MAX_VIDEO_BYTES)
+      return { ok: false, message: 'Video recording exceeds 50 MB limit.' };
   } else {
     if (!ALLOWED_AUDIO_TYPES.has(mimeType))
       return { ok: false, message: `Unsupported audio type: ${mimeType || '(empty)'}` };
@@ -184,7 +195,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     grade,
     book:       book ?? undefined,
     rating,
-    reviewType: reviewType as 'image' | 'audio',
+    reviewType: reviewType as ReviewType,
     mimeType,
   });
   if (!metaCheck.ok) {
@@ -199,7 +210,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return Response.json({ success: false, message: 'Could not read uploaded file.' }, { status: 400 });
   }
 
-  const fileCheck = validateFile(reviewType as 'image' | 'audio', mimeType, fileBytes.byteLength);
+  const fileCheck = validateFile(reviewType as ReviewType, mimeType, fileBytes.byteLength);
   if (!fileCheck.ok) {
     return Response.json({ success: false, message: fileCheck.message }, { status: 400 });
   }
@@ -217,7 +228,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   // grade already encodes section (e.g. "4B") from the frontend.
   const now = new Date();
   const dateTime = now.toISOString().replace(/[-:]/g, '').replace('T', '_').substring(0, 15); // YYYYMMDD_HHMMSS
-  const ext = mimeToExtension(mimeType, reviewType as 'image' | 'audio');
+  const ext = mimeToExtension(mimeType, reviewType as ReviewType);
   const fileName = [
     sanitizePart(studentName),
     sanitizePart(grade),

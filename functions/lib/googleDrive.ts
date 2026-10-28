@@ -159,7 +159,7 @@ export async function deleteDriveFile(accessToken: string, fileId: string): Prom
 }
 
 /** Map MIME type to file extension. */
-export function mimeToExtension(mimeType: string, reviewType: 'image' | 'audio'): string {
+export function mimeToExtension(mimeType: string, reviewType: 'image' | 'audio' | 'video'): string {
   const map: Record<string, string> = {
     'image/jpeg':            'jpg',
     'image/jpg':             'jpg',
@@ -173,6 +173,9 @@ export function mimeToExtension(mimeType: string, reviewType: 'image' | 'audio')
     'audio/ogg':             'ogg',
     'audio/wav':             'wav',
     'audio/mpeg':            'mp3',
+    'video/webm':            'webm',
+    'video/mp4':             'mp4',
   };
-  return map[mimeType] ?? (reviewType === 'audio' ? 'webm' : 'jpg');
+  const fallback = { image: 'jpg', audio: 'webm', video: 'webm' } as const;
+  return map[mimeType] ?? fallback[reviewType];
 }

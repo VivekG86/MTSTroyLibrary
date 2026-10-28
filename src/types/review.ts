@@ -1,13 +1,12 @@
-import { Book } from './book';
-
-export type ReviewType = 'image' | 'audio';
+export type ReviewType = 'image' | 'audio' | 'video';
 
 export type SchoolLocation = 'Troy' | 'Farmington' | 'Canton' | 'Livonia';
 
 export interface ReviewFormState {
   organization: 'MTS';
   schoolLocation: SchoolLocation;
-  book: Book | null;
+  bookTitle: string;
+  bookAuthor: string;
   studentName: string;
   grade: string;
   section: string;
