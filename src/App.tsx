@@ -5,7 +5,6 @@ import { Home } from './pages/Home/Home';
 import { Success } from './pages/Success/Success';
 import { Reviews } from './pages/Reviews/Reviews';
 import { About } from './pages/About/About';
-import { Homework } from './pages/Homework/Homework';
 import { RoleProvider } from './auth/RoleContext';
 import { getRole } from './auth/role';
 
@@ -59,8 +58,9 @@ function App() {
         <BrowserRouter>
           <Header />
           <Routes>
-            <Route path="/" element={<Homework />} />
-            <Route path="/homework" element={<Navigate to="/" replace />} />
+            {/* Homework dashboard is hidden; both paths now go to book review */}
+            <Route path="/" element={<Navigate to="/book-review" replace />} />
+            <Route path="/homework" element={<Navigate to="/book-review" replace />} />
             <Route path="/book-review" element={<Home />} />
             <Route path="/success" element={<Success />} />
             <Route path="/reviews" element={<Reviews />} />

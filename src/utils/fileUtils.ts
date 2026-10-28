@@ -27,6 +27,8 @@ export function getFileExtension(mimeType: string): string {
     'audio/mp4': 'mp4',
     'audio/ogg': 'ogg',
     'audio/wav': 'wav',
+    'video/webm': 'webm',
+    'video/mp4': 'mp4',
   };
   return map[mimeType] || 'bin';
 }

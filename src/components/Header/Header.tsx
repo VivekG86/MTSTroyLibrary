@@ -8,8 +8,8 @@ export const Header: React.FC = () => {
   const isAdmin = role === 'admin';
   const { pathname } = useLocation();
 
-  // Determine which tab is active
-  const activeTab = pathname === '/book-review' ? 1 : 0;
+  // Only the book review tab remains; leave no tab selected on other pages
+  const activeTab = pathname === '/book-review' ? 0 : false;
 
   return (
     <AppBar
@@ -68,11 +68,6 @@ export const Header: React.FC = () => {
               },
             }}
           >
-            <Tab
-              label="📖 வீட்டுப்பாடம்"
-              component={Link}
-              to="/"
-            />
             <Tab
               label="📚 புத்தக மதிப்புரை"
               component={Link}

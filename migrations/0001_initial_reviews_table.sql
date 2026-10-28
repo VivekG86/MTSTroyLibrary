@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS reviews (
   author          TEXT    NOT NULL,
   isbn            TEXT,                              -- ISBN-13 or ISBN-10, may be absent (manual entries)
   rating          INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
-  review_type     TEXT    NOT NULL CHECK (review_type IN ('image', 'audio')),
+  review_type     TEXT    NOT NULL CHECK (review_type IN ('image', 'audio', 'video')),
   drive_file_id   TEXT,                              -- populated in Phase 2 (Google Drive)
   drive_file_name TEXT,                              -- filename reserved now for Phase 2 upload
   drive_url       TEXT,                              -- populated in Phase 2
